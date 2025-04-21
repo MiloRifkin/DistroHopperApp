@@ -179,14 +179,6 @@ public class MainMenuViewController {
             window.run();
             usbDevicesList = window.getListOfDrives();
 
-            if (!usbDevicesList.isEmpty()){
-                for (Character usbStorageDevice : usbDevicesList) {
-                    usbComboBox.getItems().add(usbStorageDevice.toString());
-                }
-
-            } else {
-                usbComboBox.getItems().add("No USB drives detected");
-            }
             return null;
         }
     };
@@ -342,6 +334,17 @@ public class MainMenuViewController {
 
         //Update label
         infoAndDescriptions.setText(infoAndDescriptionsContent);
+
+        usbComboBox.getItems().removeAll();
+
+        if (usbDevicesList != null){
+            for (Character usbStorageDevice : usbDevicesList) {
+                usbComboBox.getItems().add(usbStorageDevice.toString());
+            }
+
+        } else {
+            usbComboBox.getItems().add("No USB drives detected");
+        }
     }
 
 }

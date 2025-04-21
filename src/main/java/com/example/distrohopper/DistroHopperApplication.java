@@ -18,6 +18,7 @@ public class DistroHopperApplication extends Application {
             stage.setTitle("DistroHopper");
             stage.setScene(scene);
             stage.show();
+
         }catch(Exception E){
             System.out.println("Loading window failed");
         }

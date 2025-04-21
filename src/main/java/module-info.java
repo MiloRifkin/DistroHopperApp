@@ -5,7 +5,6 @@ module com.example.distrohopper {
     requires com.jcraft.jsch;
     requires mysql.connector.j;
     requires java.desktop;
-    requires usbdrivedetector;
     requires com.sun.jna.platform;
     requires com.sun.jna;
 
