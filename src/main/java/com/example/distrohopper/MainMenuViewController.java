@@ -21,7 +21,6 @@ import java.sql.*;
 
 //Others
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,8 +34,13 @@ public class MainMenuViewController {
     String SSHUserName = "sgsho2";
     String privateKey = "id_rsa";
     int SSHPort = 22;
-    W32Window window = new W32Window();
 
+
+
+    //endregion
+
+    //region USB Detector
+    W32Window window = new W32Window();
     //endregion
 
     //region database connection parameters
@@ -49,13 +53,15 @@ public class MainMenuViewController {
     //region variables
     String selectedDistro = null;
     String selectedVersion = null;
-    List<Character> usbDevicesList = null;
+    List<String> usbDevicesList = null;
     String selectedDistroDescription = null;
     String selectedISOSize = null;
     String selectedUSBDriveName = null;
     String selectedDriveSize = null;
     String selectedISODownloadLink = null;
     String selectedDriveUUID = null;
+
+    String warningLabelText = "";
     //endregion
 
     //region Labels and Strings
@@ -64,7 +70,7 @@ public class MainMenuViewController {
     private Label infoAndDescriptions;
 
     @FXML
-    private Label warningText; //Not yet implemented
+    private Label warningLabel; //Not yet implemented
 
     //endregion
 
@@ -85,7 +91,6 @@ public class MainMenuViewController {
 
         //Have to put "version, distro" or else it cannot find version (could fix later)
         String databaseQuery = "select version, distro from distro_information where distro=\"" + selectedDistro +"\";";
-        System.out.println(databaseQuery);
         return executeQuery(databaseQuery, "version");
     }
 
@@ -102,6 +107,8 @@ public class MainMenuViewController {
     private String getDriveSize(){
         return "16GB";
     }
+
+
 
     //endregion
 
@@ -158,7 +165,7 @@ public class MainMenuViewController {
 
         selectedUSBDriveName = usbComboBox.getValue();
 
-        for(Character usbDevice: usbDevicesList){
+        for(String usbDevice: usbDevicesList){
             if(Objects.equals(selectedUSBDriveName, usbDevice.toString())){
                 selectedDriveUUID = window.getDriveUUIDs(usbDevice);
             }
@@ -172,13 +179,26 @@ public class MainMenuViewController {
 
     //region USB Device Detection Multithreading
 
-    Task<Void> task = new Task<Void>() {
+    Task<Void> usbDetection = new Task<Void>() {
         @Override
         protected Void call() throws Exception {
 
-            window.run();
-            usbDevicesList = window.getListOfDrives();
+            String currentSystem = System.getProperty("os.name");
 
+            if(!Objects.equals(currentSystem, "Windows 10") && !Objects.equals(currentSystem, "Windows 11")){
+
+                ArrayList<String> localUSBDeviceList= new ArrayList<>();
+                warningLabelText = warningLabelText + "\nWarning: this program is only compatible with windows 10 or above.";
+                warningLabel.setText(warningLabelText);
+                window.getDriveUUIDs("D");
+
+
+            }else{
+                window.run();
+                if(!window.getListOfDrives().isEmpty()){
+                    usbDevicesList = window.getListOfDrives();
+                }
+            }
             return null;
         }
     };
@@ -246,9 +266,14 @@ public class MainMenuViewController {
     @FXML
     protected void initialize(){
 
-        reloadDescription();
+        new Thread(usbDetection).start();
+
+
         linuxComboBox.getItems().addAll(getDistros());
-        new Thread(task).start();
+
+        System.out.println(usbDevicesList);
+
+        //reloadDescription();
 
     }
 
@@ -287,21 +312,20 @@ public class MainMenuViewController {
                 Connection connection = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword);
                 Statement statement = connection.createStatement();
                 ResultSet databaseResult = statement.executeQuery(databaseQuery);
-                System.out.println(databaseResult);
                 while(databaseResult.next()){
                     databaseReturn.add(databaseResult.getString(target));
-                    System.out.println(databaseReturn);
                 }
 
             }catch (SQLException E){
-                databaseReturn.add("-2");
-                System.out.println(databaseQuery);
-                return databaseReturn;
+                warningLabelText = "SQL error";
+                warningLabel.setText(warningLabelText);
+                return null;
             }
         }catch(JSchException E) {
-            System.out.println("JSCH broke af yo");
+            warningLabelText = "Cannot establish SSH Connection to the Server.";
+            warningLabel.setText(warningLabelText);
             databaseReturn.add("-1");
-            return databaseReturn;
+            return null;
         }
 
         return databaseReturn;
@@ -337,13 +361,13 @@ public class MainMenuViewController {
 
         usbComboBox.getItems().removeAll();
 
-        if (usbDevicesList != null){
-            for (Character usbStorageDevice : usbDevicesList) {
-                usbComboBox.getItems().add(usbStorageDevice.toString());
+        if (!usbDevicesList.isEmpty()){
+            for (String usbStorageDevice : usbDevicesList) {
+                usbComboBox.getItems().add(usbStorageDevice);
             }
 
         } else {
-            usbComboBox.getItems().add("No USB drives detected");
+            warningLabel.setText("\nNo USB Drive detected!"+ warningLabel.getText());
         }
     }
 

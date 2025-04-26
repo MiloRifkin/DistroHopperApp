@@ -5,7 +5,6 @@ import com.sun.jna.platform.win32.DBT;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinUser;
-import com.sun.jna.Native;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.ptr.IntByReference;
 
@@ -27,16 +26,16 @@ public class W32Window implements Runnable{
     private static final int DBT_DEVICEREMOVECOMPLETE = 32772;
     private static final int DBT_DEVTYP_VOLUME = 2;
 
-    private static List<Character> listOfDrives;
+    private static List<String> listOfDrives;
     //The drive letters of currently connected drives is stored in this arraylist
 
-    private HashMap<Character, String> driveUUIDs = new HashMap<>();
+    private HashMap<String, String> driveUUIDs = new HashMap<>();
     //The Drive UUID's (needed for flashing) are stored in this Hashmap. Use the getter getDriveUUID's & pass the drive letter to access.
 
-    private HashMap <Character, String> driveDescription = new HashMap<Character, String>();
+    private HashMap<Object, String> driveDescription = new HashMap<Object, String>();
     //The Drive description, e.g. 'USB Drive' is stored in this hashmap. Use the getter getDriveDescription() & pass the drive letter to access.
 
-    private static HashMap <Character, Float> driveCapacity = new HashMap<Character, Float>();
+    private static HashMap<Object, Float> driveCapacity = new HashMap<Object, Float>();
     //The Drive capacity, stored in MB. Use the getter getDriveCapacity to access, & pass the drive letter to access.
 
     public W32Window() {
@@ -101,7 +100,7 @@ public class W32Window implements Runnable{
         DBT.DEV_BROADCAST_HDR hdr = new DBT.DEV_BROADCAST_HDR(lparam.longValue());
         if (hdr.dbch_devicetype == 2) {
             DBT.DEV_BROADCAST_VOLUME vol = new DBT.DEV_BROADCAST_VOLUME(hdr.getPointer());
-            char driveLetter = this.getDriveLetter(vol.dbcv_unitmask);
+            String driveLetter = String.valueOf(this.getDriveLetter(vol.dbcv_unitmask));
             System.out.println("Drive letter: " + driveLetter + "://");
             listOfDrives.add(driveLetter);
 
@@ -146,18 +145,18 @@ public class W32Window implements Runnable{
                 String Description = fsv.getSystemTypeDescription(root);
                 char driveLetter = root.getPath().charAt(0);
 
-                listOfDrives.add(driveLetter);
-                driveDescription.put(driveLetter, Description);
+                listOfDrives.add(String.valueOf(driveLetter));
+                driveDescription.put(String.valueOf(driveLetter), Description);
                 System.out.println(driveLetter + "://. " + Description);
 
                 String serial = getVolumeSerial(String.valueOf(driveLetter));
-                driveUUIDs.put(driveLetter, serial);
+                driveUUIDs.put(String.valueOf(driveLetter), serial);
 
                 try {
                     FileStore store = Files.getFileStore(root.toPath());
                     long totalSpace = store.getTotalSpace();
                     float spaceinMB = totalSpace / (1024f * 1024f);
-                    driveCapacity.put(driveLetter, spaceinMB);
+                    driveCapacity.put(String.valueOf(driveLetter), spaceinMB);
                     System.out.println(driveLetter + "://.  " + spaceinMB);
                 } catch (IOException e) {
                     System.err.println("Could not get Filestore for drive " + driveLetter + "://. " + e.getMessage());
@@ -193,7 +192,7 @@ public class W32Window implements Runnable{
 
 
     //Various public getters for the ArrayList & Hashmaps, used for wider program function
-    public char getDrive(int i) {
+    public String getDrive(int i) {
         return listOfDrives.get(i);
     }
 
@@ -205,11 +204,11 @@ public class W32Window implements Runnable{
         return driveCapacity.get(c);
     }
 
-    public List<Character> getListOfDrives() {
+    public List<String> getListOfDrives() {
         return listOfDrives;
     }
 
-    public String getDriveUUIDs(char c) {
+    public String getDriveUUIDs(String c) {
         return driveUUIDs.get(c);
     }
 }
