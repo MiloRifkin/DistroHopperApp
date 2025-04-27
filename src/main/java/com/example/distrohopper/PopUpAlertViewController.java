@@ -23,6 +23,8 @@ public class PopUpAlertViewController {
 
     }
 
+
+
     /**
      * Handler for the proceed button, proceeds to the flashing view controller and closes the warning window
      */

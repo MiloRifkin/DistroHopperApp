@@ -295,7 +295,7 @@ public class W32Window implements Runnable{
         return driveDescription.get(c);
     }
 
-    public float getDriveCapacity(char c){
+    public float getDriveCapacity(String c){
         return driveCapacity.get(c);
     }
 

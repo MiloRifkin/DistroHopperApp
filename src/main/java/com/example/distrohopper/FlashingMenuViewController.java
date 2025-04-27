@@ -22,7 +22,9 @@ public class FlashingMenuViewController {
 
     //region variables
 
-    protected static String driveUUID;
+    protected static String driveNumber;
+    protected static String driveLetter;
+    protected static String unusedDriveLetter;
     protected static String link;
     protected static String distroName;
     protected static String distroVersion;
@@ -31,13 +33,6 @@ public class FlashingMenuViewController {
     //endregion
 
     //region getters and setters
-    public static String getDriveUUID() {
-        return driveUUID;
-    }
-
-    public static void setDriveUUID(String driveUUID) {
-        FlashingMenuViewController.driveUUID = driveUUID;
-    }
 
     public static void setLink(String link) {
         FlashingMenuViewController.link = link;
@@ -53,6 +48,21 @@ public class FlashingMenuViewController {
     public static void setTotalImageSize(Float imageSize){
         totalImageSize = imageSize;
     }
+
+    public static void setDriveNumber(String selectedDriveNumber) {
+        driveNumber = selectedDriveNumber;
+    }
+
+    public static void setUnusedDriveLetter(String driveLetter){
+        unusedDriveLetter = driveLetter;
+    }
+
+    public static void setDriveLetter(String selectedDriveLetter){
+        driveLetter = selectedDriveLetter;
+    }
+
+
+
     //endregion
 
     //region labels
@@ -73,6 +83,8 @@ public class FlashingMenuViewController {
     //endRegion
 
     String errorLabelText = "";
+
+
 
     /**
      *
@@ -125,7 +137,6 @@ public class FlashingMenuViewController {
         arrowLabel.setFont(new Font(40));
         leftLabel.setText(distroName);
         rightLabel.setText("USB Drive");
-        System.out.println(driveUUID + link +distroName+distroVersion);
         Task<Void> downloadTask = createDownloadTask(progressBar);
         Thread downloadThread = new Thread(downloadTask);
         downloadThread.start();

@@ -21,6 +21,7 @@ import java.sql.*;
 
 //Others
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,18 +52,26 @@ public class MainMenuViewController {
     //endregion
 
     //region variables
+
+    //Options
     String selectedDistro = null;
     String selectedVersion = null;
-    List<String> usbDevicesList = new ArrayList<>();
     String selectedDistroDescription = null;
     Float selectedISOSize = -1F;
-    String selectedUSBDriveName = null;
-    String selectedDriveSize = null;
     String selectedISODownloadLink = null;
-    String selectedDriveUUID = null;
 
-    String warningLabelText = "";
+    //USB information
+    List<String> usbDevicesList = new ArrayList<>();
+    Float selectedDriveSize;
+    String selectedDriveNumber = null;
+    String selectedDriveLetter = null;
+    List<String> allDriveLetters = new ArrayList<>();
+    String unusedDriveLetter;
+
+
     //endregion
+
+
 
     //region Labels and Strings
 
@@ -71,6 +80,9 @@ public class MainMenuViewController {
 
     @FXML
     private Label warningLabel; //Not yet implemented
+
+
+    String warningLabelText = "";
 
     //endregion
 
@@ -105,7 +117,13 @@ public class MainMenuViewController {
         return Objects.requireNonNull(executeQuery(databaseQuery, "link")).getFirst();
     }
 
-
+    private String getUnusedDriveCharacter(){
+        List<String> allPossibleDriveCharacters = new ArrayList<String>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
+        for(String i: allDriveLetters){
+            allPossibleDriveCharacters.remove(i);
+        }
+        return allPossibleDriveCharacters.getFirst();
+    }
 
     //endregion
 
@@ -157,16 +175,14 @@ public class MainMenuViewController {
      */
     public void selectedUSBDrive() {
 
-        selectedUSBDriveName = null;
-        selectedDriveSize = null;
+        selectedDriveLetter = usbComboBox.getValue();
 
-        selectedUSBDriveName = usbComboBox.getValue();
+        unusedDriveLetter = getUnusedDriveCharacter();
 
-        for(String usbDevice: usbDevicesList){
-            if(Objects.equals(selectedUSBDriveName, usbDevice)){
-                selectedDriveUUID = window.getDriveUUIDs(usbDevice);
-            }
-        }
+        selectedDriveNumber = window.getDriveNumber(selectedDriveLetter);
+
+        selectedDriveSize = window.getDriveCapacity(selectedDriveLetter);
+
 
     }
 
@@ -206,9 +222,13 @@ public class MainMenuViewController {
             selectedISODownloadLink = getISOLink();
             FlashingMenuViewController.setDistroName(selectedDistro);
             FlashingMenuViewController.setDistroVersion(selectedVersion);
-            FlashingMenuViewController.setDriveUUID(selectedDriveUUID);
+
             FlashingMenuViewController.setLink(selectedISODownloadLink);
             FlashingMenuViewController.setTotalImageSize(selectedISOSize);
+
+            FlashingMenuViewController.setDriveNumber(selectedDriveNumber);
+            FlashingMenuViewController.setUnusedDriveLetter(unusedDriveLetter);
+            FlashingMenuViewController.setDriveLetter(selectedDriveLetter);
 
             try{
 
@@ -244,7 +264,7 @@ public class MainMenuViewController {
             proceed = false;
             warningLabelText = warningLabelText + "\nNotice: Please select the version\n";
         }
-        if(selectedUSBDriveName == null){
+        if(selectedDriveLetter == null){
             proceed = false;
             warningLabelText = warningLabelText + "\nNotice: Please select the drive to create the installer on\n";
         }
