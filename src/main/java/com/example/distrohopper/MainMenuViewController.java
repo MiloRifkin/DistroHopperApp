@@ -118,7 +118,7 @@ public class MainMenuViewController {
     }
 
     private String getUnusedDriveCharacter(){
-        List<String> allPossibleDriveCharacters = new ArrayList<String>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
+        List<String> allPossibleDriveCharacters = new ArrayList<>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
         for(String i: allDriveLetters){
             allPossibleDriveCharacters.remove(i);
         }

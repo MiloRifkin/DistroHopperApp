@@ -92,7 +92,7 @@ public class FlashingMenuViewController {
      * @return void
      */
     private Task<Void> createDownloadTask(ProgressBar progressBar) {
-        Task<Void> ISODownload = new Task<Void>() {
+        Task<Void> ISODownload = new Task<>() {
             @Override
             public Void call() throws Exception {
                 System.out.println(totalImageSize);
@@ -147,7 +147,7 @@ public class FlashingMenuViewController {
 
 
 
-    public void aboutDistroHopper(ActionEvent actionEvent) {
+    public void aboutDistroHopper() {
         try{
 
             FXMLLoader fxmlLoader = new FXMLLoader(DistroHopperApplication.class.getResource("about-view.fxml"));
@@ -162,15 +162,4 @@ public class FlashingMenuViewController {
             System.out.println("Loading new window failed");
         }
     }
-
-
-    /**
-     * The following function downloads the iso file from variable link
-     * @throws IOException: Throws exception when the link is invalid
-     */
-    public static void downloadISO() throws IOException {
-
-
-    }
-
 }
