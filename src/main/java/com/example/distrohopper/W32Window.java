@@ -6,7 +6,6 @@ import com.sun.jna.platform.win32.*;
 import com.sun.jna.ptr.IntByReference;
 
 
-
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +42,8 @@ public class W32Window implements Runnable{
     //The driveVIDs are stored in here. Use the getter getDriveVid() to access
     private HashMap<String, String> drivePIDs = new HashMap<>();
     //The drivePIDs are stored in here. Use the getter getDrivePid() to access
+
+    private HashMap<String, String> driveNumbers = new HashMap<>();
 
 
     public W32Window() {
@@ -162,10 +163,26 @@ public class W32Window implements Runnable{
             System.out.println("Vendor ID: " + vid);
             System.out.println("Product ID: " + pid);
 
+            // Attempting to use the device path to get the device number
+            Pattern deviceNumberPattern = Pattern.compile("#(\\d+)$");
+            Matcher deviceNumberMatcher = deviceNumberPattern.matcher(devicePath.replaceAll("\\\\", "/"));
+
+            if (deviceNumberMatcher.find()) {
+                String deviceNumber = deviceNumberMatcher.group(1);
+                System.out.println("Device Number (quick parse): " + deviceNumber);
+                if (!listOfDrives.isEmpty()) {
+                    String lastDrive = listOfDrives.get(listOfDrives.size() -1);
+                    driveNumbers.put(lastDrive, deviceNumber);
+                }
+            } else {
+                System.out.println("Device Number not found in device path.");
+            }
+
             if (!listOfDrives.isEmpty()) {
                 String lastDrive = listOfDrives.get(listOfDrives.size() - 1);
                 driveVIDs.put(lastDrive, vid);
                 drivePIDs.put(lastDrive, pid);
+
             }
         } else {
             System.out.println("VID/PID not found in device path.");
@@ -296,5 +313,9 @@ public class W32Window implements Runnable{
 
     public String getDrivePID(String c) {
         return drivePIDs.get(c);
+    }
+
+    public String getDriveNumber(String c) {
+        return driveNumbers.get(c);
     }
 }
