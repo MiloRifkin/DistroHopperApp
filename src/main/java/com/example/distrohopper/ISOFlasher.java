@@ -28,7 +28,6 @@ public class ISOFlasher {
             int result = p.waitFor();
             System.out.println("Exited with code: " + result);
             if (result==0){ return true; }
-            else { return false; }
         } catch (IOException | InterruptedException e) {e.printStackTrace();}
         return false;
     }
