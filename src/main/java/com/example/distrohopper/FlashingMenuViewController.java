@@ -93,7 +93,9 @@ public class FlashingMenuViewController {
      * @return void
      */
     private Task<Void> createDownloadTask(ProgressBar progressBar) {
-        Task<Void> ISODownload = new Task<>() {
+
+
+        return new Task<>() {
             @Override
             public Void call() throws Exception {
 
@@ -116,32 +118,51 @@ public class FlashingMenuViewController {
                         }
 
                         updateProgress(100,100);
+
+                        Task<Void> flashingTask = createFlashingTask(flashingProgressBar);
+                        Thread flashingThread = new Thread(flashingTask);
+                        System.out.println("Download Complete");
+                        flashingThread.start();
                     }
                 }
-
                 return null;
             }
         };
-        createFlashingTask(flashingProgressBar);
-        progressBar.progressProperty().bind(ISODownload.progressProperty());
-
-        return ISODownload;
     }
 
     private Task<Void> createFlashingTask(ProgressBar flashingProgressBar){
-        Task<Void> flashingTask = new Task<Void>() {
+        return new Task<Void>() {
             @Override
             public Void call() throws Exception{
-                ISOFlasher flasher = new ISOFlasher();
-                if (flasher.flashISO(unusedDriveLetter, driveLetter, distroVersion, driveNumber)){
-                    flashingComplete.setText("Flashing complete!");
-                    System.out.println("Complete!");
-                }
+
+                //System runs code which emulates following PowerShell call: .\diskMount.ps1 Y X Fedora_1.4 1
+                System.out.println("Building process:");
+                ProcessBuilder builder = new ProcessBuilder(
+                        "powershell.exe",
+                        "-NoProfile",
+                        "-ExecutionPolicy",
+                        "Bypass",
+                        "-File",
+                        (System.getProperty("user.dir")+"\\diskMount.PS1"),
+                        unusedDriveLetter,
+                        driveLetter,
+                        distroVersion,
+                        driveNumber
+                );
+                try {
+                    Process p = builder.start();
+                    int result = p.waitFor();
+                    System.out.println("Exited with code: " + result);
+                } catch (IOException | InterruptedException e) {e.printStackTrace();}
+//                ISOFlasher flasher = new ISOFlasher();
+//                if (flasher.flashISO(unusedDriveLetter, driveLetter, distroVersion, driveNumber)){
+//                    flashingComplete.setText("Flashing complete!");
+//                    System.out.println("Complete!");
+//                }
                 return null;
             }
 
         };
-        return flashingTask;
     }
 
 

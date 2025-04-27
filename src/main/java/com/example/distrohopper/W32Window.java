@@ -4,7 +4,7 @@ package com.example.distrohopper;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.tools.javac.Main;
+//import com.sun.tools.javac.Main;
 
 
 import javax.swing.filechooser.FileSystemView;
@@ -124,7 +124,7 @@ public class W32Window implements Runnable{
     private void handleVolumeArrival(WinDef.LPARAM lparam) {
         DBT.DEV_BROADCAST_VOLUME vol = new DBT.DEV_BROADCAST_VOLUME(new Pointer(lparam.longValue()));
         char driveLetter = getDriveLetter(vol.dbcv_unitmask);
-        MainMenuViewController.setUsbDevicesList(listOfDrives);
+//        MainMenuViewController.setUsbDevicesList(listOfDrives);
         System.out.println("Drive letter: " + driveLetter + "://");
         listOfDrives.add(String.valueOf(driveLetter));
 
@@ -244,7 +244,7 @@ public class W32Window implements Runnable{
                 listOfDrives.add(String.valueOf(driveLetter));
                 driveDescription.put(String.valueOf(driveLetter), Description);
                 System.out.println(driveLetter + "://. " + Description);
-                MainMenuViewController.setUsbDevicesList(listOfDrives);
+
 
                 String serial = getVolumeSerial(String.valueOf(driveLetter));
                 driveUUIDs.put(String.valueOf(driveLetter), serial);
@@ -260,6 +260,7 @@ public class W32Window implements Runnable{
                 }
             }
         }
+        //MainMenuViewController.setUsbDevicesList(listOfDrives);
     }
 
     private String getVolumeSerial(String driveLetter) {

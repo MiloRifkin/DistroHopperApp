@@ -187,7 +187,6 @@ public class MainMenuViewController {
         System.out.println("Drive letter used to mount ISO: " + unusedDriveLetter);
 
         selectedDriveNumber = window.getDriveNumber(selectedDriveLetter);
-        System.out.println("Selected Drive Number: " + selectedDriveNumber);
 
         selectedDriveSize = window.getDriveCapacity(selectedDriveLetter);
         System.out.println("Selected Drive capacity: "+ selectedDriveSize);
@@ -197,6 +196,7 @@ public class MainMenuViewController {
                 selectedDriveNumber = String.valueOf(i);
             }
         }
+        System.out.println("Selected Drive Number: " + selectedDriveNumber);
 
     }
 
@@ -303,6 +303,7 @@ public class MainMenuViewController {
         }else{
 
             usbDevicesList.add("Testing device (no device detected)");
+
         }
 
         linuxComboBox.getItems().addAll(getDistros());
