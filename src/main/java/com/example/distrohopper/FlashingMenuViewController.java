@@ -95,11 +95,12 @@ public class FlashingMenuViewController {
         Task<Void> ISODownload = new Task<>() {
             @Override
             public Void call() throws Exception {
+
                 System.out.println(totalImageSize);
 
                 if(link != null){
 
-                    try (BufferedInputStream in = new BufferedInputStream(new URL(link).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(distroName +" "+distroVersion+ ".iso")) {
+                    try (BufferedInputStream in = new BufferedInputStream(new URL(link).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(distroVersion+ ".iso")) {
                         byte[] dataBuffer = new byte[1024];
                         int bytesRead;
                         int totalBytesRead = 0;
