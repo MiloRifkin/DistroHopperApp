@@ -74,6 +74,7 @@ public class FlashingMenuViewController {
     public Label rightLabel;
     public Label arrowLabel;
     public Label errorLabel;
+    public Label flashingComplete;
 
     //endRegion
 
@@ -117,12 +118,30 @@ public class FlashingMenuViewController {
                         updateProgress(100,100);
                     }
                 }
+
                 return null;
             }
         };
+        createFlashingTask(flashingProgressBar);
         progressBar.progressProperty().bind(ISODownload.progressProperty());
 
         return ISODownload;
+    }
+
+    private Task<Void> createFlashingTask(ProgressBar flashingProgressBar){
+        Task<Void> flashingTask = new Task<Void>() {
+            @Override
+            public Void call() throws Exception{
+                ISOFlasher flasher = new ISOFlasher();
+                if (flasher.flashISO(unusedDriveLetter, driveLetter, distroVersion, driveNumber)){
+                    flashingComplete.setText("Flashing complete!");
+                    System.out.println("Complete!");
+                }
+                return null;
+            }
+
+        };
+        return flashingTask;
     }
 
 
@@ -130,7 +149,7 @@ public class FlashingMenuViewController {
      * Function is called when the flashing menu view page is loaded
      */
     @FXML
-    protected void initialize(){
+    protected void initialize() throws Exception {
         Image leftPhoto = new Image("leftImage.png");
         Image rightPhoto = new Image("rightImage.png");
         leftImage.setImage(leftPhoto);
@@ -141,8 +160,6 @@ public class FlashingMenuViewController {
         Task<Void> downloadTask = createDownloadTask(progressBar);
         Thread downloadThread = new Thread(downloadTask);
         downloadThread.start();
-
-
 
     }
 
