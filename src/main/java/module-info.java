@@ -1,5 +1,4 @@
 module com.example.distrohopper {
-    requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
     requires com.jcraft.jsch;
@@ -7,6 +6,7 @@ module com.example.distrohopper {
     requires java.desktop;
     requires com.sun.jna.platform;
     requires com.sun.jna;
+    requires atlantafx.base;
 
 
     opens com.example.distrohopper to javafx.fxml;

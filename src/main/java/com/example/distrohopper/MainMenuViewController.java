@@ -21,6 +21,7 @@ import java.sql.*;
 
 //Others
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,18 +52,26 @@ public class MainMenuViewController {
     //endregion
 
     //region variables
+
+    //Options
     String selectedDistro = null;
     String selectedVersion = null;
-    List<String> usbDevicesList = null;
     String selectedDistroDescription = null;
-    String selectedISOSize = null;
-    String selectedUSBDriveName = null;
-    String selectedDriveSize = null;
+    Float selectedISOSize = -1F;
     String selectedISODownloadLink = null;
-    String selectedDriveUUID = null;
 
-    String warningLabelText = "";
+    //USB information
+    List<String> usbDevicesList = new ArrayList<>();
+    Float selectedDriveSize;
+    String selectedDriveNumber = null;
+    String selectedDriveLetter = null;
+    List<String> allDriveLetters = new ArrayList<>();
+    String unusedDriveLetter;
+
+
     //endregion
+
+
 
     //region Labels and Strings
 
@@ -71,6 +80,9 @@ public class MainMenuViewController {
 
     @FXML
     private Label warningLabel; //Not yet implemented
+
+
+    String warningLabelText = "";
 
     //endregion
 
@@ -94,21 +106,24 @@ public class MainMenuViewController {
         return executeQuery(databaseQuery, "version");
     }
 
-    private String getISOSize(){
+    private float getISOSize(){
         String databaseQuery = "select size, distro, version from distro_information where distro =\"" + selectedDistro + "\" and  version = \"" + selectedVersion +"\";";
-        return executeQuery(databaseQuery, "size").getFirst();
+        return Float.parseFloat(Objects.requireNonNull(executeQuery(databaseQuery, "size")).getFirst());
+
     }
 
     private String getISOLink(){
         String databaseQuery = "select distro, version, link from distro_information where distro = \"" + selectedDistro + "\" and version = \"" + selectedVersion + "\";";
-        return executeQuery(databaseQuery, "link").getFirst();
+        return Objects.requireNonNull(executeQuery(databaseQuery, "link")).getFirst();
     }
 
-    private String getDriveSize(){
-        return "16GB";
+    private String getUnusedDriveCharacter(){
+        List<String> allPossibleDriveCharacters = new ArrayList<>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
+        for(String i: allDriveLetters){
+            allPossibleDriveCharacters.remove(i);
+        }
+        return allPossibleDriveCharacters.getFirst();
     }
-
-
 
     //endregion
 
@@ -134,7 +149,7 @@ public class MainMenuViewController {
         selectedVersion = null;
         selectedDistroDescription = null;
         selectedDistro = linuxComboBox.getValue();
-        versionComboBox.getItems().addAll(getVersionNumbers());
+        versionComboBox.getItems().setAll(getVersionNumbers());
         selectedDistroDescription = getDescription().getFirst();
         reloadDescription();
 
@@ -160,18 +175,14 @@ public class MainMenuViewController {
      */
     public void selectedUSBDrive() {
 
-        selectedUSBDriveName = null;
-        selectedDriveSize = null;
+        selectedDriveLetter = usbComboBox.getValue();
 
-        selectedUSBDriveName = usbComboBox.getValue();
+        unusedDriveLetter = getUnusedDriveCharacter();
 
-        for(String usbDevice: usbDevicesList){
-            if(Objects.equals(selectedUSBDriveName, usbDevice.toString())){
-                selectedDriveUUID = window.getDriveUUIDs(usbDevice);
-            }
-        }
+        selectedDriveNumber = window.getDriveNumber(selectedDriveLetter);
 
-        reloadDescription();
+        selectedDriveSize = window.getDriveCapacity(selectedDriveLetter);
+
 
     }
 
@@ -179,25 +190,19 @@ public class MainMenuViewController {
 
     //region USB Device Detection Multithreading
 
-    Task<Void> usbDetection = new Task<Void>() {
+    Task<Void> usbDetection = new Task<>() {
         @Override
-        protected Void call() throws Exception {
+        protected Void call(){
 
             String currentSystem = System.getProperty("os.name");
 
             if(!Objects.equals(currentSystem, "Windows 10") && !Objects.equals(currentSystem, "Windows 11")){
 
-                ArrayList<String> localUSBDeviceList= new ArrayList<>();
                 warningLabelText = warningLabelText + "\nWarning: this program is only compatible with windows 10 or above.";
                 warningLabel.setText(warningLabelText);
-                window.getDriveUUIDs("D");
-
 
             }else{
                 window.run();
-                if(!window.getListOfDrives().isEmpty()){
-                    usbDevicesList = window.getListOfDrives();
-                }
             }
             return null;
         }
@@ -217,8 +222,13 @@ public class MainMenuViewController {
             selectedISODownloadLink = getISOLink();
             FlashingMenuViewController.setDistroName(selectedDistro);
             FlashingMenuViewController.setDistroVersion(selectedVersion);
-            FlashingMenuViewController.setDriveUUID(selectedDriveUUID);
+
             FlashingMenuViewController.setLink(selectedISODownloadLink);
+            FlashingMenuViewController.setTotalImageSize(selectedISOSize);
+
+            FlashingMenuViewController.setDriveNumber(selectedDriveNumber);
+            FlashingMenuViewController.setUnusedDriveLetter(unusedDriveLetter);
+            FlashingMenuViewController.setDriveLetter(selectedDriveLetter);
 
             try{
 
@@ -227,6 +237,7 @@ public class MainMenuViewController {
                 Stage stage = new Stage();
                 stage.setTitle("Warning");
                 stage.setScene(scene);
+                stage.setResizable(false);
                 stage.show();
 
             }catch(Exception e){
@@ -242,19 +253,23 @@ public class MainMenuViewController {
      */
     private boolean ProceedToInstallCheck() {
         boolean proceed = true;
-        String warningLabel = "";
+
+        warningLabelText = "";
 
         if(selectedDistro == null){
-            warningLabel = warningLabel + "Please select the distro\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the distro\n";
             proceed = false;
         }
         if(selectedVersion == null){
             proceed = false;
-            warningLabel = warningLabel + "Please select the version\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the version\n";
         }
-        if(selectedUSBDriveName == null){
+        if(selectedDriveLetter == null){
             proceed = false;
-            warningLabel = warningLabel + "Please select the drive to create the installer on\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the drive to create the installer on\n";
+        }
+        if(!proceed){
+            warningLabel.setText(warningLabelText);
         }
         return proceed;
     }
@@ -268,12 +283,15 @@ public class MainMenuViewController {
 
         new Thread(usbDetection).start();
 
+        if(!window.getListOfDrives().isEmpty()){
+            usbDevicesList.addAll(window.getListOfDrives());
+        }else{
+
+            usbDevicesList.add("Testing device (no device detected)");
+        }
 
         linuxComboBox.getItems().addAll(getDistros());
-
-        System.out.println(usbDevicesList);
-
-        //reloadDescription();
+        usbComboBox.getItems().addAll(usbDevicesList);
 
     }
 
@@ -346,30 +364,44 @@ public class MainMenuViewController {
         }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "Selected distro: "+"\n";}
 
         //Distro Description
-        if (selectedDistroDescription != null){infoAndDescriptionsContent = "\n"+ infoAndDescriptionsContent + selectedDistroDescription + "\n";}
+        if (selectedDistroDescription != null){infoAndDescriptionsContent =infoAndDescriptionsContent + "\nInfo: " + selectedDistroDescription + "\n";}
 
         //Distro Version
-        if(selectedVersion != null){infoAndDescriptionsContent = infoAndDescriptionsContent +  "Selected Version: "+selectedVersion+"\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "Selected Version: "+"\n";}
+        if(selectedVersion != null){infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+selectedVersion+"\n";
+        }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+"\n";}
 
         //Distro Download Size
-        if(selectedISOSize != null) {infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File size: " + selectedISOSize + "\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File Size: " + "\n";}
+        if(selectedISOSize != -1) {infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File size: " + selectedISOSize + "\n";
+        }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File Size: " + "\n";}
 
         //Update label
         infoAndDescriptions.setText(infoAndDescriptionsContent);
 
-        usbComboBox.getItems().removeAll();
-
         if (!usbDevicesList.isEmpty()){
-            for (String usbStorageDevice : usbDevicesList) {
-                usbComboBox.getItems().add(usbStorageDevice);
-            }
-
+            usbComboBox.getItems().setAll(usbDevicesList);
         } else {
             warningLabel.setText("\nNo USB Drive detected!"+ warningLabel.getText());
         }
     }
 
+    /**
+     * Launches the about page
+     */
+    @FXML
+    public void aboutDistroHopper() {
+        try{
+
+            FXMLLoader fxmlLoader = new FXMLLoader(DistroHopperApplication.class.getResource("about-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 650, 450);
+            Stage stage = new Stage();
+            stage.setTitle("About");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.show();
+
+        }catch(Exception e){
+            System.out.println("Loading new window failed");
+        }
+    }
 }
 

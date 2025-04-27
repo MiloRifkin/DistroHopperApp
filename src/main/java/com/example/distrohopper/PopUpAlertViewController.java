@@ -23,6 +23,8 @@ public class PopUpAlertViewController {
 
     }
 
+
+
     /**
      * Handler for the proceed button, proceeds to the flashing view controller and closes the warning window
      */
@@ -35,6 +37,7 @@ public class PopUpAlertViewController {
             Stage stage = new Stage();
             stage.setTitle("Retrieving and Flashing...");
             stage.setScene(scene);
+            stage.setResizable(false);
             stage.show();
         }catch(Exception e){
             System.out.println("Loading new window failed");
