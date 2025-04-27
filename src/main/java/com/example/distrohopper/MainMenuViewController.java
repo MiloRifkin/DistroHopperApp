@@ -203,6 +203,9 @@ public class MainMenuViewController {
 
             }else{
                 window.run();
+                usbDevicesList.addAll(window.getListOfDrives());
+                System.out.println("Drives loaded");
+                System.out.println(usbDevicesList);
             }
             return null;
         }
