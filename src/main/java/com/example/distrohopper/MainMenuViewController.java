@@ -61,7 +61,7 @@ public class MainMenuViewController {
     String selectedISODownloadLink = null;
 
     //USB information
-    List<String> usbDevicesList = new ArrayList<>();
+    static List<String> usbDevicesList = new ArrayList<>();
     Float selectedDriveSize;
     String selectedDriveNumber = null;
     String selectedDriveLetter = null;
@@ -116,7 +116,10 @@ public class MainMenuViewController {
         String databaseQuery = "select distro, version, link from distro_information where distro = \"" + selectedDistro + "\" and version = \"" + selectedVersion + "\";";
         return Objects.requireNonNull(executeQuery(databaseQuery, "link")).getFirst();
     }
-
+    
+    public static void setUsbDevicesList(List<String> usbDevicesList_p){
+        usbDevicesList = usbDevicesList_p;
+    }
     private String getUnusedDriveCharacter(){
         List<String> allPossibleDriveCharacters = new ArrayList<>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
         for(String i: allDriveLetters){
@@ -203,9 +206,6 @@ public class MainMenuViewController {
 
             }else{
                 window.run();
-                usbDevicesList.addAll(window.getListOfDrives());
-                System.out.println("Drives loaded");
-                System.out.println(usbDevicesList);
             }
             return null;
         }
@@ -285,7 +285,7 @@ public class MainMenuViewController {
     protected void initialize(){
 
         new Thread(usbDetection).start();
-
+        
         if(!window.getListOfDrives().isEmpty()){
             usbDevicesList.addAll(window.getListOfDrives());
         }else{
