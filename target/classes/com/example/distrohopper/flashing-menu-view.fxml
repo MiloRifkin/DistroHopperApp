@@ -10,42 +10,44 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
-      prefWidth="600.0" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.distrohopper.FlashingMenuViewController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="com.example.distrohopper.FlashingMenuViewController">
     <MenuBar>
         <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" text="About"/>
+            <MenuItem mnemonicParsing="false" onAction="#aboutDistroHopper" text="About DistroHopper" />
         </Menu>
     </MenuBar>
     <AnchorPane prefHeight="381.0" prefWidth="600.0">
         <BorderPane layoutX="29.0" layoutY="26.0" prefHeight="319.0" prefWidth="541.0">
             <bottom>
-                <ProgressBar prefHeight="20.0" prefWidth="365.0" progress="0.0" BorderPane.alignment="CENTER" fx:id = "progressBar"/>
+                <VBox prefHeight="65.0" prefWidth="540.0" BorderPane.alignment="CENTER">
+                    <Label text="Download Progress:" fx:id ="downloading" />
+                    <ProgressBar fx:id="progressBar" prefHeight="21.0" prefWidth="544.0" progress="0.0" />
+                    <Label text="Flashing Progress:" fx:id = "flashing"/>
+                    <ProgressBar fx:id="flashingProgressBar" prefHeight="21.0" prefWidth="544.0" progress="0.0" />
+                </VBox>
             </bottom>
             <center>
                 <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                     <left>
                         <VBox prefHeight="299.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                            <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true"
-                                       preserveRatio="true" fx:id = "leftImage"/>
-                            <Label alignment="CENTER" prefHeight="101.0" prefWidth="201.0" text="Label" fx:id = "leftLabel"/>
+                            <ImageView fx:id="leftImage" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                            <Label fx:id="leftLabel" alignment="CENTER" prefHeight="101.0" prefWidth="201.0" text="Label" />
                         </VBox>
                     </left>
                     <right>
                         <VBox prefHeight="299.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                            <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true"
-                                       preserveRatio="true" fx:id = "rightImage"/>
-                            <Label alignment="CENTER" prefHeight="99.0" prefWidth="205.0" text="Label" fx:id = "rightLabel"/>
+                            <ImageView fx:id="rightImage" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                            <Label fx:id="rightLabel" alignment="CENTER" prefHeight="99.0" prefWidth="205.0" text="Label" />
                         </VBox>
                     </right>
                     <center>
                         <VBox prefHeight="299.0" prefWidth="223.0" BorderPane.alignment="CENTER">
-                            <Label alignment="CENTER" prefHeight="316.0" prefWidth="205.0" text="➔" fx:id="arrowLabel"/>
+                            <Label fx:id="arrowLabel" alignment="CENTER" prefHeight="316.0" prefWidth="205.0" text="➔" />
                         </VBox>
                     </center>
                 </BorderPane>
             </center>
         </BorderPane>
+      <Label fx:id="errorLabel" layoutX="6.0" layoutY="6.0" prefHeight="27.0" prefWidth="583.0" textFill="#b50000" />
     </AnchorPane>
 </VBox>
