@@ -92,11 +92,16 @@ public class FlashingMenuViewController {
                         byte[] dataBuffer = new byte[1024];
                         int bytesRead;
                         int totalBytesRead = 0;
+                        double progressPercentage;
                         while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                             fileOutputStream.write(dataBuffer, 0, bytesRead);
                             totalBytesRead = totalBytesRead + 1;
+                            progressPercentage = (double) totalBytesRead /totalImageSize*1073741824;
+                            System.out.println(progressPercentage);
+                            updateProgress(totalBytesRead, totalImageSize* 1073741824L);
 
                         }
+
                         updateProgress(100,100);
                     }
                 }

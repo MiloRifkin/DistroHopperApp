@@ -53,7 +53,7 @@ public class MainMenuViewController {
     //region variables
     String selectedDistro = null;
     String selectedVersion = null;
-    List<String> usbDevicesList = null;
+    List<String> usbDevicesList = new ArrayList<>();
     String selectedDistroDescription = null;
     String selectedISOSize = null;
     String selectedUSBDriveName = null;
@@ -96,12 +96,12 @@ public class MainMenuViewController {
 
     private String getISOSize(){
         String databaseQuery = "select size, distro, version from distro_information where distro =\"" + selectedDistro + "\" and  version = \"" + selectedVersion +"\";";
-        return executeQuery(databaseQuery, "size").getFirst();
+        return Objects.requireNonNull(executeQuery(databaseQuery, "size")).getFirst();
     }
 
     private String getISOLink(){
         String databaseQuery = "select distro, version, link from distro_information where distro = \"" + selectedDistro + "\" and version = \"" + selectedVersion + "\";";
-        return executeQuery(databaseQuery, "link").getFirst();
+        return Objects.requireNonNull(executeQuery(databaseQuery, "link")).getFirst();
     }
 
     private String getDriveSize(){
@@ -187,17 +187,11 @@ public class MainMenuViewController {
 
             if(!Objects.equals(currentSystem, "Windows 10") && !Objects.equals(currentSystem, "Windows 11")){
 
-                ArrayList<String> localUSBDeviceList= new ArrayList<>();
                 warningLabelText = warningLabelText + "\nWarning: this program is only compatible with windows 10 or above.";
                 warningLabel.setText(warningLabelText);
-                window.getDriveUUIDs("D");
-
 
             }else{
                 window.run();
-                if(!window.getListOfDrives().isEmpty()){
-                    usbDevicesList = window.getListOfDrives();
-                }
             }
             return null;
         }
@@ -242,19 +236,23 @@ public class MainMenuViewController {
      */
     private boolean ProceedToInstallCheck() {
         boolean proceed = true;
-        String warningLabel = "";
+
+        warningLabelText = "";
 
         if(selectedDistro == null){
-            warningLabel = warningLabel + "Please select the distro\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the distro\n";
             proceed = false;
         }
         if(selectedVersion == null){
             proceed = false;
-            warningLabel = warningLabel + "Please select the version\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the version\n";
         }
         if(selectedUSBDriveName == null){
             proceed = false;
-            warningLabel = warningLabel + "Please select the drive to create the installer on\n";
+            warningLabelText = warningLabelText + "\nNotice: Please select the drive to create the installer on\n";
+        }
+        if(!proceed){
+            warningLabel.setText(warningLabelText);
         }
         return proceed;
     }
@@ -269,11 +267,15 @@ public class MainMenuViewController {
         new Thread(usbDetection).start();
 
 
+        if(!window.getListOfDrives().isEmpty()){
+            usbDevicesList.addAll(window.getListOfDrives());
+        }else{
+
+            usbDevicesList.add("Testing device (no device detected)");
+        }
+
         linuxComboBox.getItems().addAll(getDistros());
-
-        System.out.println(usbDevicesList);
-
-        //reloadDescription();
+        usbComboBox.getItems().addAll(usbDevicesList);
 
     }
 
@@ -370,6 +372,5 @@ public class MainMenuViewController {
             warningLabel.setText("\nNo USB Drive detected!"+ warningLabel.getText());
         }
     }
-
 }
 
