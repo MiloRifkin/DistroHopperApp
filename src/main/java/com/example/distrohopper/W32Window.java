@@ -4,6 +4,7 @@ package com.example.distrohopper;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.tools.javac.Main;
 
 
 import javax.swing.filechooser.FileSystemView;
@@ -87,13 +88,13 @@ public class W32Window implements Runnable{
         notificationFilter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
         notificationFilter.dbcc_classguid = new Guid.GUID("{A5DCBF10-6530-11D2-901F-00C04FB951ED}"); //Guid for USB devices
 
-        Pointer notificationHandle = user.RegisterDeviceNotification(hwnd, notificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE).getPointer();
-
-        if (notificationHandle == null) {
-            System.err.println("Failed to register for USB events");
-        } else {
-            System.err.println("Listening for USB events");
-        }
+//        Pointer notificationHandle = user.RegisterDeviceNotification(hwnd, notificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE).getPointer();
+//
+//        if (notificationHandle == null) {
+//            System.err.println("Failed to register for USB events");
+//        } else {
+//            System.err.println("Listening for USB events");
+//        }
 
         WinUser.MSG msg = new WinUser.MSG();
         while (user.GetMessage(msg, hwnd, 0, 0) > 0) {
@@ -123,7 +124,7 @@ public class W32Window implements Runnable{
     private void handleVolumeArrival(WinDef.LPARAM lparam) {
         DBT.DEV_BROADCAST_VOLUME vol = new DBT.DEV_BROADCAST_VOLUME(new Pointer(lparam.longValue()));
         char driveLetter = getDriveLetter(vol.dbcv_unitmask);
-
+        MainMenuViewController.setUsbDevicesList(listOfDrives);
         System.out.println("Drive letter: " + driveLetter + "://");
         listOfDrives.add(String.valueOf(driveLetter));
 
@@ -243,6 +244,9 @@ public class W32Window implements Runnable{
                 listOfDrives.add(String.valueOf(driveLetter));
                 driveDescription.put(String.valueOf(driveLetter), Description);
                 System.out.println(driveLetter + "://. " + Description);
+                listOfDrives.add("A");
+                MainMenuViewController.setUsbDevicesList(listOfDrives);
+                System.out.println(listOfDrives);
 
                 String serial = getVolumeSerial(String.valueOf(driveLetter));
                 driveUUIDs.put(String.valueOf(driveLetter), serial);
