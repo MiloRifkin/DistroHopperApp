@@ -8,11 +8,13 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 //UI Libraries
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.concurrent.Task;
 
@@ -55,7 +57,7 @@ public class MainMenuViewController {
     String selectedVersion = null;
     List<String> usbDevicesList = new ArrayList<>();
     String selectedDistroDescription = null;
-    String selectedISOSize = null;
+    Float selectedISOSize = -1F;
     String selectedUSBDriveName = null;
     String selectedDriveSize = null;
     String selectedISODownloadLink = null;
@@ -94,9 +96,13 @@ public class MainMenuViewController {
         return executeQuery(databaseQuery, "version");
     }
 
-    private String getISOSize(){
+    private float getISOSize(){
         String databaseQuery = "select size, distro, version from distro_information where distro =\"" + selectedDistro + "\" and  version = \"" + selectedVersion +"\";";
-        return Objects.requireNonNull(executeQuery(databaseQuery, "size")).getFirst();
+        System.out.println(databaseQuery);
+
+
+        return Float.parseFloat(Objects.requireNonNull(executeQuery(databaseQuery, "size")).getFirst());
+
     }
 
     private String getISOLink(){
@@ -134,7 +140,7 @@ public class MainMenuViewController {
         selectedVersion = null;
         selectedDistroDescription = null;
         selectedDistro = linuxComboBox.getValue();
-        versionComboBox.getItems().addAll(getVersionNumbers());
+        versionComboBox.getItems().setAll(getVersionNumbers());
         selectedDistroDescription = getDescription().getFirst();
         reloadDescription();
 
@@ -148,6 +154,7 @@ public class MainMenuViewController {
 
         selectedVersion = versionComboBox.getValue();
         selectedISOSize = getISOSize();
+        System.out.println(selectedISOSize);
         reloadDescription();
 
     }
@@ -170,8 +177,6 @@ public class MainMenuViewController {
                 selectedDriveUUID = window.getDriveUUIDs(usbDevice);
             }
         }
-
-        reloadDescription();
 
     }
 
@@ -213,6 +218,7 @@ public class MainMenuViewController {
             FlashingMenuViewController.setDistroVersion(selectedVersion);
             FlashingMenuViewController.setDriveUUID(selectedDriveUUID);
             FlashingMenuViewController.setLink(selectedISODownloadLink);
+            FlashingMenuViewController.setTotalImageSize(selectedISOSize);
 
             try{
 
@@ -355,21 +361,36 @@ public class MainMenuViewController {
         }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "Selected Version: "+"\n";}
 
         //Distro Download Size
-        if(selectedISOSize != null) {infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File size: " + selectedISOSize + "\n";
+        if(selectedISOSize != -1) {infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File size: " + selectedISOSize + "\n";
         }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File Size: " + "\n";}
 
         //Update label
         infoAndDescriptions.setText(infoAndDescriptionsContent);
 
-        usbComboBox.getItems().removeAll();
-
         if (!usbDevicesList.isEmpty()){
-            for (String usbStorageDevice : usbDevicesList) {
-                usbComboBox.getItems().add(usbStorageDevice);
-            }
-
+            usbComboBox.getItems().setAll(usbDevicesList);
         } else {
             warningLabel.setText("\nNo USB Drive detected!"+ warningLabel.getText());
+        }
+    }
+
+    /**
+     * Launches the about page
+     * @param actionEvent gets an action
+     */
+    @FXML
+    public void aboutDistroHopper(ActionEvent actionEvent) {
+        try{
+
+            FXMLLoader fxmlLoader = new FXMLLoader(DistroHopperApplication.class.getResource("about-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 650, 450);
+            Stage stage = new Stage();
+            stage.setTitle("Warning");
+            stage.setScene(scene);
+            stage.show();
+
+        }catch(Exception e){
+            System.out.println("Loading new window failed");
         }
     }
 }
