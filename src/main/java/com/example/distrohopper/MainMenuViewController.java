@@ -67,6 +67,7 @@ public class MainMenuViewController {
     String selectedDriveLetter = null;
     List<String> allDriveLetters = new ArrayList<>();
     String unusedDriveLetter;
+    int usbIndex;
 
 
     //endregion
@@ -181,16 +182,21 @@ public class MainMenuViewController {
     public void selectedUSBDrive() {
 
         selectedDriveLetter = usbComboBox.getValue();
-        System.out.println(selectedDriveLetter);
+        System.out.println("Selected drive letter:" + selectedDriveLetter);
         unusedDriveLetter = getUnusedDriveCharacter();
-        System.out.println(unusedDriveLetter);
+        System.out.println("Drive letter used to mount ISO: " + unusedDriveLetter);
 
         selectedDriveNumber = window.getDriveNumber(selectedDriveLetter);
-        System.out.println(selectedDriveNumber);
-
+        System.out.println("Selected Drive Number: " + selectedDriveNumber);
 
         selectedDriveSize = window.getDriveCapacity(selectedDriveLetter);
-        System.out.println(selectedDriveSize);
+        System.out.println("Selected Drive capacity: "+ selectedDriveSize);
+
+        for(int i = 0; i<usbDevicesList.size(); i++){
+            if(usbDevicesList.get(i) == selectedDriveLetter){
+                selectedDriveNumber = String.valueOf(i);
+            }
+        }
 
     }
 
