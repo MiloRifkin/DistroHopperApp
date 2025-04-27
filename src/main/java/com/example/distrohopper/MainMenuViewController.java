@@ -120,6 +120,8 @@ public class MainMenuViewController {
     public static void setUsbDevicesList(List<String> usbDevicesList_p){
         usbDevicesList = usbDevicesList_p;
     }
+
+
     private String getUnusedDriveCharacter(){
         List<String> allPossibleDriveCharacters = new ArrayList<>(Arrays.asList("D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","y","Z"));
         for(String i: allDriveLetters){
@@ -179,13 +181,16 @@ public class MainMenuViewController {
     public void selectedUSBDrive() {
 
         selectedDriveLetter = usbComboBox.getValue();
-
+        System.out.println(selectedDriveLetter);
         unusedDriveLetter = getUnusedDriveCharacter();
+        System.out.println(unusedDriveLetter);
 
         selectedDriveNumber = window.getDriveNumber(selectedDriveLetter);
+        System.out.println(selectedDriveNumber);
+
 
         selectedDriveSize = window.getDriveCapacity(selectedDriveLetter);
-
+        System.out.println(selectedDriveSize);
 
     }
 
@@ -205,7 +210,7 @@ public class MainMenuViewController {
                 warningLabel.setText(warningLabelText);
 
             }else{
-                window.run();
+                window.listInsertedDrives();
             }
             return null;
         }
@@ -284,8 +289,9 @@ public class MainMenuViewController {
     @FXML
     protected void initialize(){
 
-        new Thread(usbDetection).start();
-        
+        System.out.println(window.getListOfDrives());
+        window.listInsertedDrives();
+        System.out.println(usbDevicesList);
         if(!window.getListOfDrives().isEmpty()){
             usbDevicesList.addAll(window.getListOfDrives());
         }else{

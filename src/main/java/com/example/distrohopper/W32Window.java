@@ -244,9 +244,7 @@ public class W32Window implements Runnable{
                 listOfDrives.add(String.valueOf(driveLetter));
                 driveDescription.put(String.valueOf(driveLetter), Description);
                 System.out.println(driveLetter + "://. " + Description);
-                listOfDrives.add("A");
                 MainMenuViewController.setUsbDevicesList(listOfDrives);
-                System.out.println(listOfDrives);
 
                 String serial = getVolumeSerial(String.valueOf(driveLetter));
                 driveUUIDs.put(String.valueOf(driveLetter), serial);
