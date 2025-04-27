@@ -240,23 +240,25 @@ public class W32Window implements Runnable{
             if (fsv.isDrive(root) && fsv.isTraversable(root) != null && root.canRead()) {
                 String Description = fsv.getSystemTypeDescription(root);
                 char driveLetter = root.getPath().charAt(0);
+                if (driveLetter != 'C') {
 
-                listOfDrives.add(String.valueOf(driveLetter));
-                driveDescription.put(String.valueOf(driveLetter), Description);
-                System.out.println(driveLetter + "://. " + Description);
+                    listOfDrives.add(String.valueOf(driveLetter));
+                    driveDescription.put(String.valueOf(driveLetter), Description);
+                    System.out.println(driveLetter + "://. " + Description);
 
 
-                String serial = getVolumeSerial(String.valueOf(driveLetter));
-                driveUUIDs.put(String.valueOf(driveLetter), serial);
+                    String serial = getVolumeSerial(String.valueOf(driveLetter));
+                    driveUUIDs.put(String.valueOf(driveLetter), serial);
 
-                try {
-                    FileStore store = Files.getFileStore(root.toPath());
-                    long totalSpace = store.getTotalSpace();
-                    float spaceinMB = totalSpace / (1024f * 1024f);
-                    driveCapacity.put(String.valueOf(driveLetter), spaceinMB);
-                    System.out.println(driveLetter + "://.  " + spaceinMB);
-                } catch (IOException e) {
-                    System.err.println("Could not get Filestore for drive " + driveLetter + "://. " + e.getMessage());
+                    try {
+                        FileStore store = Files.getFileStore(root.toPath());
+                        long totalSpace = store.getTotalSpace();
+                        float spaceinMB = totalSpace / (1024f * 1024f);
+                        driveCapacity.put(String.valueOf(driveLetter), spaceinMB);
+                        System.out.println(driveLetter + "://.  " + spaceinMB);
+                    } catch (IOException e) {
+                        System.err.println("Could not get Filestore for drive " + driveLetter + "://. " + e.getMessage());
+                    }
                 }
             }
         }
