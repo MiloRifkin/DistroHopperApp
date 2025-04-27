@@ -15,26 +15,8 @@
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.distrohopper.MainMenuViewController">
     <MenuBar prefHeight="17.0" prefWidth="640.0" VBox.vgrow="NEVER">
-
-        <Menu mnemonicParsing="false" text="Preferences">
-            <MenuItem mnemonicParsing="false" text="New"/>
-            <MenuItem mnemonicParsing="false" text="Open…"/>
-            <Menu mnemonicParsing="false" text="Open Recent"/>
-            
-            <SeparatorMenuItem mnemonicParsing="false"/>
-            <MenuItem mnemonicParsing="false" text="Close"/>
-            <MenuItem mnemonicParsing="false" text="Save"/>
-            <MenuItem mnemonicParsing="false" text="Save As…"/>
-            <MenuItem mnemonicParsing="false" text="Revert"/>
-            <SeparatorMenuItem mnemonicParsing="false"/>
-
-            <MenuItem mnemonicParsing="false" text="Preferences…"/>
-            <SeparatorMenuItem mnemonicParsing="false"/>
-            <MenuItem mnemonicParsing="false" text="Quit"/>
-        </Menu>
-
         <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" text="About DistroHopper"/>
+            <MenuItem mnemonicParsing="false" text="About DistroHopper" onAction="#aboutDistroHopper"/>
         </Menu>
 
     </MenuBar>
@@ -58,7 +40,7 @@
                         <Label layoutX="12.0" layoutY="145.0" text="Select USB Drive"/>
                     </AnchorPane>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="205.0" prefWidth="255.0">
-                        <Label fx:id = "infoAndDescriptions" layoutX = "7.0" layoutY="7.0" prefHeight="239.0" prefWidth="241.0"/>
+                        <Label fx:id = "infoAndDescriptions" layoutX = "7.0" layoutY="7.0" prefHeight="239.0" prefWidth="241.0" wrapText="true"/>
                     </AnchorPane>
                 </SplitPane>
             </center>

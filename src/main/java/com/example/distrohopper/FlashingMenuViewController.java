@@ -24,7 +24,7 @@ public class FlashingMenuViewController {
     protected static String link;
     protected static String distroName;
     protected static String distroVersion;
-    protected static int totalImageSize = 1;
+    protected static Float totalImageSize = 3F;
 
     //endregion
 
@@ -60,6 +60,10 @@ public class FlashingMenuViewController {
     public static void setDistroVersion(String distroVersion) {
         FlashingMenuViewController.distroVersion = distroVersion;
     }
+
+    public static void setTotalImageSize(Float imageSize){
+        totalImageSize = imageSize;
+    }
     //endregion
 
     //region labels
@@ -70,6 +74,7 @@ public class FlashingMenuViewController {
     public Label leftLabel;
     public Label rightLabel;
     public Label arrowLabel;
+    public Label errorLabel;
 
     //endRegion
 
@@ -78,8 +83,13 @@ public class FlashingMenuViewController {
     public ImageView rightImage;
     //endRegion
 
+    String errorLabelText = "";
 
-
+    /**
+     *
+     * @param progressBar Used to update the download progress
+     * @return void
+     */
     private Task<Void> createDownloadTask(ProgressBar progressBar) {
         Task<Void> ISODownload = new Task<Void>() {
             @Override
@@ -96,22 +106,16 @@ public class FlashingMenuViewController {
                         while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                             fileOutputStream.write(dataBuffer, 0, bytesRead);
                             totalBytesRead = totalBytesRead + 1;
-                            progressPercentage = (double) totalBytesRead /totalImageSize*1073741824;
-                            System.out.println(progressPercentage);
-                            updateProgress(totalBytesRead, totalImageSize* 1073741824L);
-
+                            updateProgress(totalBytesRead, totalImageSize* 1000000L);
+                            if(isCancelled()){
+                                errorLabelText = "Error: Download failed";
+                                break;
+                            }
                         }
 
                         updateProgress(100,100);
                     }
                 }
-//            final int max = 1000000;
-//            for (int i=1; i<=max; i++) {
-//                if (isCancelled()) {
-//                    break;
-//                }
-//                updateProgress(i, max);
-//            }
                 return null;
             }
         };
@@ -120,9 +124,7 @@ public class FlashingMenuViewController {
         return ISODownload;
     }
 
-    public static void setImageSize(int selectedISOSize) {
-        totalImageSize = selectedISOSize;
-    }
+
 
     /**
      * Function is called when the flashing menu view page is loaded
