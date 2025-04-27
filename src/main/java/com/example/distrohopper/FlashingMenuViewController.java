@@ -4,10 +4,12 @@ package com.example.distrohopper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.concurrent.Task;
 
+import javax.print.attribute.standard.MediaSize;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class FlashingMenuViewController {
     protected static String link;
     protected static String distroName;
     protected static String distroVersion;
+    protected static int totalImageSize = 1;
 
     //endregion
 
@@ -61,7 +64,9 @@ public class FlashingMenuViewController {
 
     //region labels
 
-    public ProgressBar progressBar;
+    @FXML
+    public ProgressBar flashingProgressBar;
+    public ProgressBar progressBar = new ProgressBar(0);
     public Label leftLabel;
     public Label rightLabel;
     public Label arrowLabel;
@@ -74,19 +79,27 @@ public class FlashingMenuViewController {
     //endRegion
 
 
-    Task<Void> ISODownload = new Task<Void>() {
-        @Override
-        public Void call() throws Exception {
 
-            if(link != null){
-                try (BufferedInputStream in = new BufferedInputStream(new URL(link).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(distroName +" "+distroVersion+ ".iso")) {
-                    byte[] dataBuffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
-                        fileOutputStream.write(dataBuffer, 0, bytesRead);
+    private Task<Void> createDownloadTask(ProgressBar progressBar) {
+        Task<Void> ISODownload = new Task<Void>() {
+            @Override
+            public Void call() throws Exception {
+                System.out.println(totalImageSize);
+
+                if(link != null){
+
+                    try (BufferedInputStream in = new BufferedInputStream(new URL(link).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(distroName +" "+distroVersion+ ".iso")) {
+                        byte[] dataBuffer = new byte[1024];
+                        int bytesRead;
+                        int totalBytesRead = 0;
+                        while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                            fileOutputStream.write(dataBuffer, 0, bytesRead);
+                            totalBytesRead = totalBytesRead + 1;
+
+                        }
+                        updateProgress(100,100);
                     }
                 }
-            }
 //            final int max = 1000000;
 //            for (int i=1; i<=max; i++) {
 //                if (isCancelled()) {
@@ -94,22 +107,34 @@ public class FlashingMenuViewController {
 //                }
 //                updateProgress(i, max);
 //            }
-            return null;
-        }
-    };
+                return null;
+            }
+        };
+        progressBar.progressProperty().bind(ISODownload.progressProperty());
+
+        return ISODownload;
+    }
+
+    public static void setImageSize(int selectedISOSize) {
+        totalImageSize = selectedISOSize;
+    }
 
     /**
      * Function is called when the flashing menu view page is loaded
      */
     @FXML
     protected void initialize(){
-        progressBar.setProgress(99);
+        Image leftPhoto = new Image("leftImage.png");
+        Image rightPhoto = new Image("rightImage.png");
+        leftImage.setImage(leftPhoto);
+        rightImage.setImage(rightPhoto);
         arrowLabel.setFont(new Font(40));
         leftLabel.setText(distroName);
-        rightLabel.setText(driveUUID);
+        rightLabel.setText("USB Drive");
         System.out.println(driveUUID + link +distroName+distroVersion);
-        progressBar.progressProperty().bind(ISODownload.progressProperty());
-        new Thread(ISODownload).start();
+        Task<Void> downloadTask = createDownloadTask(progressBar);
+        Thread downloadThread = new Thread(downloadTask);
+        downloadThread.start();
 
     }
 

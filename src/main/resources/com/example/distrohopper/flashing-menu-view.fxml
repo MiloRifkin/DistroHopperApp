@@ -21,7 +21,12 @@
     <AnchorPane prefHeight="381.0" prefWidth="600.0">
         <BorderPane layoutX="29.0" layoutY="26.0" prefHeight="319.0" prefWidth="541.0">
             <bottom>
-                <ProgressBar prefHeight="20.0" prefWidth="365.0" progress="0.0" BorderPane.alignment="CENTER" fx:id = "progressBar"/>
+                <VBox prefHeight="65.0" prefWidth="540.0" BorderPane.alignment="CENTER">
+                    <Label text="Download Progress:"/>
+                    <ProgressBar prefHeight="21.0" prefWidth="544.0" progress="0.0" fx:id="progressBar"/>
+                    <Label text="Flashing Progress:"/>
+                    <ProgressBar prefHeight="21.0" prefWidth="544.0" progress="0.0" fx:id="flashingProgressBar"/>
+                </VBox>
             </bottom>
             <center>
                 <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
