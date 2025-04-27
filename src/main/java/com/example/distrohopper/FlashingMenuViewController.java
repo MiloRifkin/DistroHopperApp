@@ -1,15 +1,17 @@
 package com.example.distrohopper;
 
 //region libraries
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.concurrent.Task;
-
-import javax.print.attribute.standard.MediaSize;
+import javafx.stage.Stage;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,30 +39,17 @@ public class FlashingMenuViewController {
         FlashingMenuViewController.driveUUID = driveUUID;
     }
 
-    public static String getLink() {
-        return link;
-    }
-
     public static void setLink(String link) {
         FlashingMenuViewController.link = link;
-    }
-
-    public static String getDistroName() {
-        return distroName;
     }
 
     public static void setDistroName(String distroName) {
         FlashingMenuViewController.distroName = distroName;
     }
 
-    public static String getDistroVersion() {
-        return distroVersion;
-    }
-
     public static void setDistroVersion(String distroVersion) {
         FlashingMenuViewController.distroVersion = distroVersion;
     }
-
     public static void setTotalImageSize(Float imageSize){
         totalImageSize = imageSize;
     }
@@ -102,7 +91,6 @@ public class FlashingMenuViewController {
                         byte[] dataBuffer = new byte[1024];
                         int bytesRead;
                         int totalBytesRead = 0;
-                        double progressPercentage;
                         while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                             fileOutputStream.write(dataBuffer, 0, bytesRead);
                             totalBytesRead = totalBytesRead + 1;
@@ -125,7 +113,6 @@ public class FlashingMenuViewController {
     }
 
 
-
     /**
      * Function is called when the flashing menu view page is loaded
      */
@@ -143,7 +130,28 @@ public class FlashingMenuViewController {
         Thread downloadThread = new Thread(downloadTask);
         downloadThread.start();
 
+
+
     }
+
+
+
+    public void aboutDistroHopper(ActionEvent actionEvent) {
+        try{
+
+            FXMLLoader fxmlLoader = new FXMLLoader(DistroHopperApplication.class.getResource("about-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 650, 450);
+            Stage stage = new Stage();
+            stage.setTitle("About");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.show();
+
+        }catch(Exception e){
+            System.out.println("Loading new window failed");
+        }
+    }
+
 
     /**
      * The following function downloads the iso file from variable link

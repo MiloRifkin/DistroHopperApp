@@ -8,13 +8,11 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 //UI Libraries
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.concurrent.Task;
 
@@ -98,9 +96,6 @@ public class MainMenuViewController {
 
     private float getISOSize(){
         String databaseQuery = "select size, distro, version from distro_information where distro =\"" + selectedDistro + "\" and  version = \"" + selectedVersion +"\";";
-        System.out.println(databaseQuery);
-
-
         return Float.parseFloat(Objects.requireNonNull(executeQuery(databaseQuery, "size")).getFirst());
 
     }
@@ -108,10 +103,6 @@ public class MainMenuViewController {
     private String getISOLink(){
         String databaseQuery = "select distro, version, link from distro_information where distro = \"" + selectedDistro + "\" and version = \"" + selectedVersion + "\";";
         return Objects.requireNonNull(executeQuery(databaseQuery, "link")).getFirst();
-    }
-
-    private String getDriveSize(){
-        return "16GB";
     }
 
 
@@ -154,7 +145,6 @@ public class MainMenuViewController {
 
         selectedVersion = versionComboBox.getValue();
         selectedISOSize = getISOSize();
-        System.out.println(selectedISOSize);
         reloadDescription();
 
     }
@@ -173,7 +163,7 @@ public class MainMenuViewController {
         selectedUSBDriveName = usbComboBox.getValue();
 
         for(String usbDevice: usbDevicesList){
-            if(Objects.equals(selectedUSBDriveName, usbDevice.toString())){
+            if(Objects.equals(selectedUSBDriveName, usbDevice)){
                 selectedDriveUUID = window.getDriveUUIDs(usbDevice);
             }
         }
@@ -184,9 +174,9 @@ public class MainMenuViewController {
 
     //region USB Device Detection Multithreading
 
-    Task<Void> usbDetection = new Task<Void>() {
+    Task<Void> usbDetection = new Task<>() {
         @Override
-        protected Void call() throws Exception {
+        protected Void call(){
 
             String currentSystem = System.getProperty("os.name");
 
@@ -227,6 +217,7 @@ public class MainMenuViewController {
                 Stage stage = new Stage();
                 stage.setTitle("Warning");
                 stage.setScene(scene);
+                stage.setResizable(false);
                 stage.show();
 
             }catch(Exception e){
@@ -271,7 +262,6 @@ public class MainMenuViewController {
     protected void initialize(){
 
         new Thread(usbDetection).start();
-
 
         if(!window.getListOfDrives().isEmpty()){
             usbDevicesList.addAll(window.getListOfDrives());
@@ -354,15 +344,15 @@ public class MainMenuViewController {
         }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "Selected distro: "+"\n";}
 
         //Distro Description
-        if (selectedDistroDescription != null){infoAndDescriptionsContent = "\n"+ infoAndDescriptionsContent + selectedDistroDescription + "\n";}
+        if (selectedDistroDescription != null){infoAndDescriptionsContent =infoAndDescriptionsContent + "\nInfo: " + selectedDistroDescription + "\n";}
 
         //Distro Version
-        if(selectedVersion != null){infoAndDescriptionsContent = infoAndDescriptionsContent +  "Selected Version: "+selectedVersion+"\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "Selected Version: "+"\n";}
+        if(selectedVersion != null){infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+selectedVersion+"\n";
+        }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+"\n";}
 
         //Distro Download Size
-        if(selectedISOSize != -1) {infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File size: " + selectedISOSize + "\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "Installer File Size: " + "\n";}
+        if(selectedISOSize != -1) {infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File size: " + selectedISOSize + "\n";
+        }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File Size: " + "\n";}
 
         //Update label
         infoAndDescriptions.setText(infoAndDescriptionsContent);
@@ -376,17 +366,17 @@ public class MainMenuViewController {
 
     /**
      * Launches the about page
-     * @param actionEvent gets an action
      */
     @FXML
-    public void aboutDistroHopper(ActionEvent actionEvent) {
+    public void aboutDistroHopper() {
         try{
 
             FXMLLoader fxmlLoader = new FXMLLoader(DistroHopperApplication.class.getResource("about-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 650, 450);
             Stage stage = new Stage();
-            stage.setTitle("Warning");
+            stage.setTitle("About");
             stage.setScene(scene);
+            stage.setResizable(false);
             stage.show();
 
         }catch(Exception e){
