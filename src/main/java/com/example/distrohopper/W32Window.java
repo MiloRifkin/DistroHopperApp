@@ -1,11 +1,8 @@
 package com.example.distrohopper;
 
 //Using the Java Native Interface to make surface level Windows calls
-import com.sun.jna.platform.win32.DBT;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinUser;
-import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.*;
 import com.sun.jna.ptr.IntByReference;
 
 
@@ -18,13 +15,17 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class W32Window implements Runnable{
     //Defining Windows event code constants
-    private static final int WM_DEVICECHANGE = 537;
-    private static final int DBT_DEVICEARRIVAL = 32768;
-    private static final int DBT_DEVICEREMOVECOMPLETE = 32772;
-    private static final int DBT_DEVTYP_VOLUME = 2;
+    private static final int WM_DEVICECHANGE = 537; // a device has changed
+    private static final int DBT_DEVICEARRIVAL = 32768; //device has been inserted
+    private static final int DBT_DEVICEREMOVECOMPLETE = 32772; //device has been removed
+    private static final int DBT_DEVTYP_VOLUME = 2; //Device type: Logical volume (drive)
+    private static final int DBT_DEVTYP_DEVICEINTERFACE = 0x00000005; //Device type: Interface (e.g. USB drive)
+    private static final int DEVICE_NOTIFY_WINDOW_HANDLE = 0x00000000; //Notification type: window handle
 
     private static List<String> listOfDrives;
     //The drive letters of currently connected drives is stored in this arraylist
@@ -37,6 +38,12 @@ public class W32Window implements Runnable{
 
     private static HashMap<Object, Float> driveCapacity = new HashMap<Object, Float>();
     //The Drive capacity, stored in MB. Use the getter getDriveCapacity to access, & pass the drive letter to access.
+
+    private HashMap<String, String> driveVIDs = new HashMap<>();
+    //The driveVIDs are stored in here. Use the getter getDriveVid() to access
+    private HashMap<String, String> drivePIDs = new HashMap<>();
+    //The drivePIDs are stored in here. Use the getter getDrivePid() to access
+
 
     public W32Window() {
         listOfDrives = new ArrayList<>();
@@ -74,7 +81,18 @@ public class W32Window implements Runnable{
             return;
         }
 
-        System.err.println("Listening for USB events");
+        DBT.DEV_BROADCAST_DEVICEINTERFACE notificationFilter = new DBT.DEV_BROADCAST_DEVICEINTERFACE();
+        notificationFilter.dbcc_reserved = notificationFilter.size();
+        notificationFilter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+        notificationFilter.dbcc_classguid = new Guid.GUID("{A5DCBF10-6530-11D2-901F-00C04FB951ED}"); //Guid for USB devices
+
+        Pointer notificationHandle = user.RegisterDeviceNotification(hwnd, notificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE).getPointer();
+
+        if (notificationHandle == null) {
+            System.err.println("Failed to register for USB events");
+        } else {
+            System.err.println("Listening for USB events");
+        }
 
         WinUser.MSG msg = new WinUser.MSG();
         while (user.GetMessage(msg, hwnd, 0, 0) > 0) {
@@ -85,20 +103,80 @@ public class W32Window implements Runnable{
 
     //Sub-routine to check if the device change is a Insertion or Removal, & print to console
     private void deviceChange(int eventType, WinDef.LPARAM lparam) {
-        if (eventType == 32768) {
-            System.err.println("USB detected");
-            this.printDriveLetter(lparam);
-        } else if (eventType == 32772) {
-            System.err.println("USB removal");
-        }
+        DBT.DEV_BROADCAST_HDR hdr = new DBT.DEV_BROADCAST_HDR(lparam.longValue());
 
+        if (eventType == DBT_DEVICEARRIVAL) {
+            System.err.println("Device connected.");
+
+            if (hdr.dbch_devicetype == DBT_DEVTYP_VOLUME) {
+                handleVolumeArrival(lparam);
+            } else if (hdr.dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
+                handleDeviceInterfaceArrival(lparam);
+            }
+
+        } else if (eventType == DBT_DEVICEREMOVECOMPLETE) {
+            System.err.println("Device removed.");
+        }
+    }
+
+    private void handleVolumeArrival(WinDef.LPARAM lparam) {
+        DBT.DEV_BROADCAST_VOLUME vol = new DBT.DEV_BROADCAST_VOLUME(new Pointer(lparam.longValue()));
+        char driveLetter = getDriveLetter(vol.dbcv_unitmask);
+
+        System.out.println("Drive letter: " + driveLetter + "://");
+        listOfDrives.add(String.valueOf(driveLetter));
+
+        String serial = getVolumeSerial(String.valueOf(driveLetter));
+        driveUUIDs.put(String.valueOf(driveLetter), serial);
+
+        try {
+            File driveRoot = new File(driveLetter + "://");
+            if (driveRoot.exists() && driveRoot.canRead()) {
+                FileStore store = Files.getFileStore(driveRoot.toPath());
+                float spaceinMB = store.getTotalSpace() / (1024f * 1024f);
+                driveCapacity.put(driveLetter, spaceinMB);
+                System.out.println(spaceinMB + " MB");
+
+                FileSystemView fsv = FileSystemView.getFileSystemView();
+                String description = fsv.getSystemTypeDescription(driveRoot);
+                driveDescription.put(driveLetter, description);
+                System.out.println(description);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to read drive information for drive " + driveLetter + "://. " + e.getMessage());
+        }
+    }
+
+    private void handleDeviceInterfaceArrival(WinDef.LPARAM lparam) {
+        DBT.DEV_BROADCAST_DEVICEINTERFACE deviceInterface = new DBT.DEV_BROADCAST_DEVICEINTERFACE(new Pointer(lparam.longValue()));
+        String devicePath = deviceInterface.getDbcc_name();
+
+        System.out.println("Device Path: " + devicePath);
+
+        // Extract Vendor ID and Product ID from device path
+        Pattern p = Pattern.compile("vid_([0-9a-fA-F]+)&pid_([0-9a-fA-F]+)");
+        Matcher m = p.matcher(devicePath.toLowerCase());
+        if (m.find()) {
+            String vid = m.group(1);
+            String pid = m.group(2);
+            System.out.println("Vendor ID: " + vid);
+            System.out.println("Product ID: " + pid);
+
+            if (!listOfDrives.isEmpty()) {
+                String lastDrive = listOfDrives.get(listOfDrives.size() - 1);
+                driveVIDs.put(lastDrive, vid);
+                drivePIDs.put(lastDrive, pid);
+            }
+        } else {
+            System.out.println("VID/PID not found in device path.");
+        }
     }
 
     //Using the Windows LParam to get the drive letter, add to the ArrayList
     //Afterwards, get the capacity and description to add to Hashmap
     private void printDriveLetter(WinDef.LPARAM lparam) {
         DBT.DEV_BROADCAST_HDR hdr = new DBT.DEV_BROADCAST_HDR(lparam.longValue());
-        if (hdr.dbch_devicetype == 2) {
+        if (hdr.dbch_devicetype == DBT_DEVTYP_VOLUME) {
             DBT.DEV_BROADCAST_VOLUME vol = new DBT.DEV_BROADCAST_VOLUME(hdr.getPointer());
             String driveLetter = String.valueOf(this.getDriveLetter(vol.dbcv_unitmask));
             System.out.println("Drive letter: " + driveLetter + "://");
@@ -210,5 +288,13 @@ public class W32Window implements Runnable{
 
     public String getDriveUUIDs(String c) {
         return driveUUIDs.get(c);
+    }
+
+    public String getDriveVID(String c) {
+        return driveVIDs.get(c);
+    }
+
+    public String getDrivePID(String c) {
+        return drivePIDs.get(c);
     }
 }
