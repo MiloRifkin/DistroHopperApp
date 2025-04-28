@@ -5,6 +5,7 @@ import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 //endregion
 
@@ -21,6 +22,7 @@ public class DistroHopperApplication extends Application {
             stage.setWidth(640);
             stage.setHeight(640);
             stage.setResizable(false);
+            stage.getIcons().add(new Image("icon.jpeg"));
             stage.show();
 
         }catch(Exception E){
