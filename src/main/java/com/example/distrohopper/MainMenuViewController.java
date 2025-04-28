@@ -384,11 +384,11 @@ public class MainMenuViewController {
 
         //Distro Version
         if(selectedVersion != null){infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+selectedVersion+"\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent +  "\nSelected Version: "+"\n";}
+        }
 
         //Distro Download Size
         if(selectedISOSize != -1) {infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File size: " + selectedISOSize + "\n";
-        }else{infoAndDescriptionsContent = infoAndDescriptionsContent + "\nInstaller File Size: " + "\n";}
+        }
 
         //Update label
         infoAndDescriptions.setText(infoAndDescriptionsContent);
