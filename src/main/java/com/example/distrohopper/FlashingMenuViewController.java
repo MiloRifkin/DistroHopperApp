@@ -124,7 +124,7 @@ public class FlashingMenuViewController {
                         updateProgress(100,100);
                         Task<Void> flashingTask = createFlashingTask(flashingProgressBar);
                         Thread flashingThread = new Thread(flashingTask);
-                        downloading.setText("Download Complete");
+                        //downloading.setText("Download Complete");
                         System.out.println("Download Complete");
                         flashingThread.start();
                     }
@@ -170,7 +170,7 @@ public class FlashingMenuViewController {
                     }
                     int result = p.waitFor();
                     updateProgress(100,100);
-                    flashing.setText("Flashing Complete!");
+                    //flashing.setText("Flashing Complete!");
                     System.out.println("Exited with code: " + result);
                 } catch (IOException | InterruptedException e) {e.printStackTrace();}
                 return null;

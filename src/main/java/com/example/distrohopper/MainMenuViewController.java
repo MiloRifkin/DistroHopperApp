@@ -193,7 +193,7 @@ public class MainMenuViewController {
 
         for(int i = 0; i<usbDevicesList.size(); i++){
             if(usbDevicesList.get(i) == selectedDriveLetter){
-                selectedDriveNumber = String.valueOf(i);
+                selectedDriveNumber = String.valueOf(i+1);
             }
         }
         System.out.println("Selected Drive Number: " + selectedDriveNumber);
